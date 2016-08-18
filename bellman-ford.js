@@ -5,13 +5,11 @@
  * @param  {String} source   Source node
  * @return {Object}          Distance and predecessor maps
  */
-export default function bellmanFord(vertices = [], edges = [], source) {
+export default function computeNegativeCycles(vertices = [], edges = [], source) {
   // Step 1: initialize graph
   const distance = {};
   const predecessor = {};
   vertices.forEach(v => {
-    // At the beginning , all vertices have a weight of infinity
-    // and null predecessor
     distance[v] = Infinity;
     predecessor[v] = null;
   });
@@ -28,12 +26,26 @@ export default function bellmanFord(vertices = [], edges = [], source) {
     });
   }
 
+  const cycles = [];
+  const nodesAlreadyInCycle = {};
+
   // Step 3: check for negative-weight cycles
   edges.forEach(({ u, v, w }) => {
     if (distance[u] + w < distance[v]) {
-      throw 'Graph contains a negative-weight cycle!';
+      const cycle = [u, v];
+      nodesAlreadyInCycle[u] = true;
+      nodesAlreadyInCycle[v] = true;
+      let curr = predecessor[u];
+      while (!nodesAlreadyInCycle[curr] && curr !== source) {
+        cycle.unshift(curr);
+        nodesAlreadyInCycle[curr] = true;
+        curr = predecessor[curr];
+      }
+      cycle.unshift(curr);
+      cycle.push(curr);
+      cycles.push(cycle);
     }
   });
 
-  return { distance, predecessor };
+  return cycles;
 }
