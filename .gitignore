@@ -1,3 +1,4 @@
 node_modules
 exchange-rates/cryptonator-exchange-rates.html
 exchange-rates/cryptonator-exchange-rates.json
+.DS_Store

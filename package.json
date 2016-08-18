@@ -16,6 +16,7 @@
     "cheerio": "^0.20.0",
     "graphlib": "^2.1.1",
     "request": "^2.74.0",
-    "request-promise": "^4.1.1"
+    "request-promise": "^4.1.1",
+    "vis": "^4.16.1"
   }
 }
