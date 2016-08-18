@@ -1,8 +1,11 @@
+import fs from 'fs';
 import request from 'request-promise';
-import shapeShiftCoins from './shape-shift-coins'
+import shapeShiftCoins from './shape-shift-coins';
+
+const JSON_CACHE_PATH = './exchange-rates/shape-shift-exchange-rates.json';
 
 // 1. Convert array of coins into all-pairs array
-export default function getShapeShiftExchangeRates() {
+export function constructShapeShiftExchangeRates() {
   return shapeShiftCoins.reduce((acc, coinA) => {
     return acc.concat(
       shapeShiftCoins.map(coinB => [coinA, coinB])
@@ -28,7 +31,7 @@ export default function getShapeShiftExchangeRates() {
     });
   })
   // 3. Reduce all of these into a single promise that executes all requests
-  //    and resolves to an object mapping coin pair to coin pairs to rates
+  //    and resolves to an object mapping coin to coin to exchange rate
   .reduce((acc, doRateRequest) => {
     return acc.then(data => {
       return doRateRequest.then(moreData => {
@@ -42,4 +45,17 @@ export default function getShapeShiftExchangeRates() {
       });
     });
   }, new Promise((resolve, _) => resolve({})));
+}
+
+export default function getShapeShiftExchangeRates() {
+  if (fs.existsSync(JSON_CACHE_PATH)) {
+    console.log('Loading local JSON from ' + JSON_CACHE_PATH);
+    const json = fs.readFileSync(JSON_CACHE_PATH, 'utf8');
+    return Promise.resolve(JSON.parse(json));
+  }
+  return constructShapeShiftExchangeRates().then(exchangeRatesMap => {
+    console.log('Caching exchange rates map from ShapeShift API');
+    fs.writeFileSync(JSON_CACHE_PATH, JSON.stringify(exchangeRatesMap, 'utf8'));
+    return Promise.resolve(exchangeRatesMap);
+  });
 }
